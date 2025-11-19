@@ -5,23 +5,25 @@
 
 #define clockOutput 8
 #define load 7
+#define RCLK 0 
 #define input 9
+#define SegOutput 2
 
-#define CLOCK_DELAY 0.0001
+#define CLOCK_DELAY 100
 
 u_int8_t SevenSegmentEncoding[11] =
 {
-	0b11111100, //0
-	0b01100000, //1
+	0b01111110, //0
+	0b00001000, //1
 	0b11011010, //2
 	0b11110010,
-	0b,
-	0b,
-	0b,
-	0b,
-	0b,
-	0b
-}
+	0b00000000,
+	0b00000000,
+	0b00000000,
+	0b00000000,
+	0b00000000,
+	0b00000000
+};
 
 int main()
 {
@@ -33,6 +35,8 @@ int main()
 
     pinMode(clockOutput, OUTPUT);
     pinMode(load, OUTPUT);
+    pinMode(RCLK, OUTPUT);
+    pinMode(SegOutput, OUTPUT);
 
     pinMode(input, INPUT);
     pullUpDnControl(input, PUD_DOWN);
@@ -40,12 +44,14 @@ int main()
     unsigned long lastHalfClock = millis();
     int clockState = LOW;
     int iterations = -1;
+    int segmentIteration = 0;
 
     void OnHigh()
     {
 	if(iterations == 0)
 	{
 		digitalWrite(load, HIGH);
+		digitalWrite(RCLK, LOW);
 		printf("\n");
 	}
 	
@@ -61,7 +67,11 @@ int main()
 		//DELAY NEEDS TO GO IN THE FUTURE
 		delay(5);
 		digitalWrite(load, LOW);
+		digitalWrite(RCLK, HIGH);
 	}
+	digitalWrite(SegOutput, (SevenSegmentEncoding[1] >> segmentIteration) & 0x01);
+	segmentIteration++;
+	if(segmentIteration == 8) segmentIteration = 0;
     }
 
     while(1)
